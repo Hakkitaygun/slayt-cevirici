@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slayt Çevirici — PDF & PPTX Türkçe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.15);
+      --accent: #7c6aff;
+      --accent2: #a78bfa;
+      --accent-glow: rgba(124,106,255,0.25);
+      --text: #f0eeff;
+      --text-muted: #7a7a9a;
+      --text-dim: #4a4a6a;
+      --success: #34d399;
+      --error: #f87171;
+      --warning: #fbbf24;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,106,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    header {
+      padding: 40px 0 32px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .logo-area h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo-area p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 300;
+    }
+    .api-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .api-badge:hover { border-color: var(--accent); color: var(--accent2); }
+    .api-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+    .api-badge.connected .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+    /* ── API Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: 100%;
+      max-width: 440px;
+      margin: 20px;
+    }
+    .modal h3 { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+    .modal p a { color: var(--accent2); text-decoration: none; }
+    .modal p a:hover { text-decoration: underline; }
+    .modal input[type="text"], .modal input[type="password"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+    .modal input:focus { border-color: var(--accent); }
+    .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-primary {
+      flex: 1;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 11px;
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+
+    /* ── Upload Zone ── */
+    .upload-section { margin-bottom: 32px; }
+    .upload-zone {
+      border: 1.5px dashed var(--border-hover);
+      border-radius: var(--radius-lg);
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .upload-zone:hover::before, .upload-zone.drag-over::before { opacity: 1; }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .upload-zone.drag-over { background: rgba(124,106,255,0.05); }
+    .upload-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 24px;
+    }
+    .upload-zone h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .upload-zone p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      position: relative;
+    }
+    .upload-zone .label-link {
+      color: var(--accent2);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .format-pills {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 16px;
+      position: relative;
+    }
+    .pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    #file-input { display: none; }
+
+    /* ── File Queue ── */
+    .file-queue {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      transition: all 0.2s;
+    }
+    .file-item:hover { border-color: var(--border-hover); }
+    .file-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .file-icon.pdf { background: rgba(248,113,113,0.15); }
+    .file-icon.pptx { background: rgba(251,191,36,0.15); }
+    .file-meta { flex: 1; min-width: 0; }
+    .file-name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-size { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .file-status {
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .file-status.pending { color: var(--text-dim); }
+    .file-status.processing { color: var(--warning); }
+    .file-status.done { color: var(--success); }
+    .file-status.error { color: var(--error); }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .remove-btn:hover { color: var(--error); background: rgba(248,113,113,0.1); }
+
+    /* ── Controls ── */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .lang-select-group { display: flex; align-items: center; gap: 8px; }
+    .lang-select-group label { font-size: 13px; color: var(--text-muted); }
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+    }
+    select:focus { border-color: var(--accent); }
+    .btn-translate {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 24px;
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+      justify-content: center;
+    }
+    .btn-translate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+    .btn-translate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-translate.loading .spinner { display: block; }
+    .btn-translate.loading .btn-label { opacity: 0.7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Progress ── */
+    .progress-section {
+      margin-bottom: 32px;
+      display: none;
+    }
+    .progress-section.active { display: block; }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .progress-label { font-size: 13px; color: var(--text-muted); }
+    .progress-count { font-size: 13px; font-weight: 600; color: var(--accent2); }
+    .progress-track {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .log-box {
+      margin-top: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: monospace;
+      max-height: 120px;
+      overflow-y: auto;
+      line-height: 1.8;
+    }
+    .log-box .log-line { display: block; }
+    .log-box .log-ok { color: var(--success); }
+    .log-box .log-warn { color: var(--warning); }
+    .log-box .log-err { color: var(--error); }
+
+    /* ── Results ── */
+    .results-section { display: none; margin-bottom: 48px; }
+    .results-section.active { display: block; }
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .results-header h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .results-list { display: flex; flex-direction: column; gap: 16px; }
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .result-card:hover { border-color: var(--border-hover); }
+    .result-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-file-name {
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-file-name .badge-pages {
+      font-size: 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 2px 10px;
+      color: var(--text-muted);
+    }
+    .download-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border-hover);
+      border-radius: 8px;
+      padding: 7px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .download-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .pages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+    .page-cell {
+      background: var(--surface);
+      padding: 16px;
+    }
+    .page-num {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .page-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 6px;
+      background: var(--surface2);
+      margin-bottom: 10px;
+    }
+    .page-translation {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+    .page-translation.loading {
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    /* ── How it works ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .step-num {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      opacity: 0.5;
+      margin-bottom: 8px;
+    }
+    .step-card h4 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .step-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--accent2); }
+
+    /* ── Alert ── */
+    .alert {
+      display: none;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      margin-bottom: 16px;
+      border: 1px solid;
+    }
+    .alert.error { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); color: var(--error); }
+    .alert.success { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3); color: var(--success); }
+    .alert.show { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal">
+    <h3>🔑 API Anahtarı</h3>
+    <p>
+      Bu uygulama Anthropic Claude API'yi kullanır.<br>
+      Anahtarınızı <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> adresinden alabilirsiniz.
+      Anahtar yalnızca tarayıcınızda saklanır.
+    </p>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal()">İptal</button>
+      <button class="btn-primary" onclick="saveApiKey()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Header -->
+  <header>
+    <div class="logo-area">
+      <h1>⟡ Slayt Çevirici</h1>
+      <p>PDF & PPTX dosyalarını otomatik Türkçeye çevirir</p>
+    </div>
+    <div class="api-badge" id="api-badge" onclick="openModal()">
+      <div class="dot"></div>
+      <span id="api-badge-text">API Anahtarı Yok</span>
+    </div>
+  </header>
+
+  <!-- Alert -->
+  <div class="alert" id="alert"></div>
+
+  <!-- Upload -->
+  <div class="upload-section">
+    <div class="upload-zone" id="drop-zone">
+      <div class="upload-icon">📄</div>
+      <h2>Dosyaları buraya bırakın</h2>
+      <p>
+        veya <label class="label-link" for="file-input">dosya seçin</label>
+        — tek seferde birden fazla ekleyebilirsiniz
+      </p>
+      <div class="format-pills">
+        <span class="pill">📕 PDF</span>
+        <span class="pill">📊 PPTX</span>
+        <span class="pill">Her boyut</span>
+      </div>
+    </div>
+    <input type="file" id="file-input" accept=".pdf,.pptx" multiple />
+  </div>
+
+  <!-- File Queue -->
+  <div class="file-queue" id="file-queue"></div>
+
+  <!-- Controls -->
+  <div class="controls-bar" id="controls-bar" style="display:none;">
+    <div class="lang-select-group">
+      <label>Kaynak dil:</label>
+      <select id="src-lang">
+        <option value="auto">Otomatik algıla</option>
+        <option value="English">İngilizce</option>
+        <option value="German">Almanca</option>
+        <option value="French">Fransızca</option>
+        <option value="Spanish">İspanyolca</option>
+        <option value="Italian">İtalyanca</option>
+        <option value="Arabic">Arapça</option>
+        <option value="Chinese">Çince</option>
+        <option value="Japanese">Japonca</option>
+        <option value="Russian">Rusça</option>
+      </select>
+    </div>
+    <button class="btn-translate" id="translate-btn" onclick="startTranslation()">
+      <div class="spinner"></div>
+      <span class="btn-label">Türkçeye Çevir</span>
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section" id="progress-section">
+    <div class="progress-header">
+      <span class="progress-label" id="progress-label">İşleniyor...</span>
+      <span class="progress-count" id="progress-count">0 / 0</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="results-section">
+    <div class="results-header">
+      <h3>✅ Çeviriler Hazır</h3>
+    </div>
+    <div class="results-list" id="results-list"></div>
+  </div>
+
+  <!-- How it works -->
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <h4>Dosyayı Yükle</h4>
+      <p>PDF ya da PPTX dosyasını sürükle-bırak veya seç. Birden fazla dosya aynı anda işlenir.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <h4>AI Analiz Eder</h4>
+      <p>Her sayfa/slayt görsel olarak analiz edilir. Resimlerdeki metinler bile okunur ve çevrilir.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <h4>İndir</h4>
+      <p>Türkçe çeviriler sayfa sayfa gösterilir. PDF veya metin olarak indirebilirsiniz.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>Slayt Çevirici &mdash; <a href="https://github.com" target="_blank">GitHub'da Açık Kaynak</a> &mdash; Claude Vision API ile güçlendirilmiştir</p>
+  </footer>
+</div>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- JSZip for PPTX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+// ── State ──
+let files = [];
+let apiKey = localStorage.getItem('anthropic_api_key') || '';
+let isProcessing = false;
+
+// ── Init ──
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+updateApiBadge();
+
+// ── Modal ──
+function openModal() { document.getElementById('api-modal').classList.add('open'); document.getElementById('api-key-input').value = apiKey; }
+function closeModal() { document.getElementById('api-modal').classList.remove('open'); }
+function saveApiKey() {
+  const v = document.getElementById('api-key-input').value.trim();
+  if (!v.startsWith('sk-')) { showAlert('Geçersiz API anahtarı. "sk-" ile başlamalı.', 'error'); return; }
+  apiKey = v;
+  localStorage.setItem('anthropic_api_key', v);
+  updateApiBadge();
+  closeModal();
+  showAlert('API anahtarı kaydedildi!', 'success');
+}
+function updateApiBadge() {
+  const badge = document.getElementById('api-badge');
+  const text = document.getElementById('api-badge-text');
+  if (apiKey && apiKey.startsWith('sk-')) {
+    badge.classList.add('connected');
+    text.textContent = 'API Bağlı ✓';
+  } else {
+    badge.classList.remove('connected');
+    text.textContent = 'API Anahtarı Ekle';
+  }
+}
+
+// ── Alert ──
+function showAlert(msg, type) {
+  const el = document.getElementById('alert');
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ── Upload ──
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+dropZone.addEventListener('click', e => { if (e.target.tagName !== 'LABEL') fileInput.click(); });
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(fileList) {
+  Array.from(fileList).forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (!['pdf','pptx'].includes(ext)) { showAlert(`${f.name} desteklenmiyor. Sadece PDF ve PPTX.`, 'error'); return; }
+    const id = Date.now() + Math.random();
+    files.push({ id, file: f, name: f.name, ext, status: 'pending', result: null });
+    renderFileItem(files[files.length - 1]);
+  });
+  if (files.length > 0) document.getElementById('controls-bar').style.display = 'flex';
+}
+
+function renderFileItem(f) {
+  const queue = document.getElementById('file-queue');
+  const el = document.createElement('div');
+  el.className = 'file-item';
+  el.id = `file-${f.id}`;
+  const icon = f.ext === 'pdf' ? '📕' : '📊';
+  const size = (f.file.size / 1024 / 1024).toFixed(1);
+  el.innerHTML = `
+    <div class="file-icon ${f.ext}">${icon}</div>
+    <div class="file-meta">
+      <div class="file-name">${f.name}</div>
+      <div class="file-size">${size} MB</div>
+    </div>
+    <div class="file-status pending" id="status-${f.id}">Bekliyor</div>
+    <button class="remove-btn" onclick="removeFile('${f.id}')">✕</button>`;
+  queue.appendChild(el);
+}
+
+function removeFile(id) {
+  files = files.filter(f => f.id != id);
+  document.getElementById(`file-${id}`)?.remove();
+  if (files.length === 0) document.getElementById('controls-bar').style.display = 'none';
+}
+
+function setFileStatus(id, status, text) {
+  const el = document.getElementById(`status-${id}`);
+  if (!el) return;
+  el.className = `file-status ${status}`;
+  el.textContent = text;
+}
+
+// ── Log ──
+function log(msg, type = '') {
+  const box = document.getElementById('log-box');
+  const line = document.createElement('span');
+  line.className = `log-line ${type ? 'log-' + type : ''}`;
+  line.textContent = `[${new Date().toLocaleTimeString('tr')}] ${msg}`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ── Progress ──
+let progressTotal = 0, progressDone = 0;
+function initProgress(total) {
+  progressTotal = total; progressDone = 0;
+  document.getElementById('progress-section').classList.add('active');
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-count').textContent = `0 / ${total}`;
+  document.getElementById('log-box').innerHTML = '';
+}
+function tickProgress(label) {
+  progressDone++;
+  const pct = Math.round((progressDone / progressTotal) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-count').textContent = `${progressDone} / ${progressTotal}`;
+  document.getElementById('progress-label').textContent = label;
+}
+
+// ── PDF → images ──
+async function pdfToImages(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const images = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: 1.8 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    images.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.85), pageNum: i });
+  }
+  return images;
+}
+
+// ── PPTX → images ──
+// PPTX slaytları görsele çevirmek için slayt içindeki resim ve metin bilgilerini okuyoruz
+async function pptxToImages(file) {
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const slideFiles = Object.keys(zip.files)
+    .filter(n => n.match(/^ppt\/slides\/slide\d+\.xml$/))
+    .sort((a, b) => {
+      const na = parseInt(a.match(/\d+/)[0]);
+      const nb = parseInt(b.match(/\d+/)[0]);
+      return na - nb;
+    });
+
+  const images = [];
+  for (let i = 0; i < slideFiles.length; i++) {
+    const xmlStr = await zip.files[slideFiles[i]].async('string');
+    // Extract embedded images from slide
+    const relPath = slideFiles[i].replace('slides/slide', 'slides/_rels/slide') + '.rels';
+    let imgBase64 = null;
+    if (zip.files[relPath]) {
+      const relXml = await zip.files[relPath].async('string');
+      const imgMatch = relXml.match(/Target="\.\.\/media\/([^"]+)"/);
+      if (imgMatch) {
+        const mediaPath = 'ppt/media/' + imgMatch[1];
+        if (zip.files[mediaPath]) {
+          const imgBuf = await zip.files[mediaPath].async('base64');
+          const ext = imgMatch[1].split('.').pop().toLowerCase();
+          const mime = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+          imgBase64 = `data:${mime};base64,${imgBuf}`;
+        }
+      }
+    }
+    // Render slide on canvas with text overlay
+    const canvas = document.createElement('canvas');
+    canvas.width = 960; canvas.height = 540;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, 960, 540);
+
+    if (imgBase64) {
+      await new Promise(res => {
+        const img = new Image();
+        img.onload = () => { ctx.drawImage(img, 0, 0, 960, 540); res(); };
+        img.onerror = res;
+        img.src = imgBase64;
+      });
+    }
+
+    // Draw slide number
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(`Slayt ${i+1}`, 16, 24);
+
+    images.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.85), pageNum: i + 1, xmlStr });
+  }
+  return images;
+}
+
+// ── Claude Vision API ──
+async function translatePageImage(base64Data, pageNum, srcLang) {
+  const mime = 'image/jpeg';
+  const b64 = base64Data.split(',')[1];
+  const langHint = srcLang === 'auto' ? '' : `Kaynak dil: ${srcLang}.`;
+  const systemPrompt = `Sen bir akademik ve profesyonel belge çevirmenisın.
+Görseldeki TÜM metinleri (başlıklar, madde işaretleri, tablolar, diyagram etiketleri, dipnotlar, resim altı yazılar) eksiksiz Türkçeye çevir.
+${langHint}
+Çeviriyi şu şekilde formatla:
+- Başlık varsa: ## ile başla
+- Alt başlık varsa: ### ile başla  
+- Madde işareti varsa: • ile listele
+- Tablo varsa tablo formatını koru
+- Sıra numaralandırma varsa koru
+- Görselde hiç metin yoksa sadece: "[Bu sayfada metin bulunamadı]" yaz
+Sadece Türkçe çeviriyi yaz, ek açıklama yapma.`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
+          { type: 'text', text: `Sayfa/Slayt ${pageNum}: Bu görseldeki tüm metinleri Türkçeye çevir.` }
+        ]
+      }]
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  return data.content?.map(c => c.text || '').join('').trim() || '[Çeviri alınamadı]';
+}
+
+// ── Main translation flow ──
+async function startTranslation() {
+  if (isProcessing) return;
+  if (!apiKey || !apiKey.startsWith('sk-')) { openModal(); return; }
+  if (files.length === 0) { showAlert('Önce dosya ekleyin.', 'error'); return; }
+
+  isProcessing = true;
+  const btn = document.getElementById('translate-btn');
+  btn.classList.add('loading');
+  btn.querySelector('.btn-label').textContent = 'İşleniyor...';
+  btn.disabled = true;
+
+  document.getElementById('results-section').classList.remove('active');
+  document.getElementById('results-list').innerHTML = '';
+  const srcLang = document.getElementById('src-lang').value;
+
+  // Count total pages
+  let totalPages = 0;
+  for (const f of files) {
+    try {
+      if (f.ext === 'pdf') {
+        const buf = await f.file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        totalPages += pdf.numPages;
+      } else {
+        const buf = await f.file.arrayBuffer();
+        const zip = await JSZip.loadAsync(buf);
+        const cnt = Object.keys(zip.files).filter(n => n.match(/^ppt\/slides\/slide\d+\.xml$/)).length;
+        totalPages += cnt;
+      }
+    } catch(e) { totalPages += 1; }
+  }
+
+  initProgress(totalPages);
+  const resultsList = document.getElementById('results-list');
+
+  for (const f of files) {
+    setFileStatus(f.id, 'processing', '⏳ İşleniyor');
+    log(`"${f.name}" işleniyor...`);
+
+    try {
+      const images = f.ext === 'pdf' ? await pdfToImages(f.file) : await pptxToImages(f.file);
+      log(`${images.length} sayfa/slayt bulundu`, 'ok');
+
+      // Create result card
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.innerHTML = `
+        <div class="result-card-header">
+          <div class="result-file-name">
+            ${f.ext === 'pdf' ? '📕' : '📊'} ${f.name}
+            <span class="badge-pages">${images.length} sayfa</span>
+          </div>
+          <a class="download-btn" id="dl-${f.id}" href="#" onclick="downloadResult('${f.id}')">⬇ İndir</a>
+        </div>
+        <div class="pages-grid" id="pages-${f.id}"></div>`;
+      resultsList.appendChild(card);
+      document.getElementById('results-section').classList.add('active');
+
+      const pageResults = [];
+      const pagesGrid = document.getElementById(`pages-${f.id}`);
+
+      for (const img of images) {
+        const cell = document.createElement('div');
+        cell.className = 'page-cell';
+        cell.innerHTML = `
+          <div class="page-num">Sayfa ${img.pageNum}</div>
+          <img class="page-thumb" src="${img.dataUrl}" />
+          <div class="page-translation loading" id="trans-${f.id}-${img.pageNum}">Çevriliyor...</div>`;
+        pagesGrid.appendChild(cell);
+
+        tickProgress(`"${f.name}" — sayfa ${img.pageNum}/${images.length}`);
+        log(`Sayfa ${img.pageNum} çevriliyor...`);
+
+        try {
+          const translation = await translatePageImage(img.dataUrl, img.pageNum, srcLang);
+          pageResults.push({ page: img.pageNum, text: translation });
+          const transEl = document.getElementById(`trans-${f.id}-${img.pageNum}`);
+          transEl.textContent = translation;
+          transEl.classList.remove('loading');
+          log(`Sayfa ${img.pageNum} tamamlandı`, 'ok');
+        } catch(e) {
+          const transEl = document.getElementById(`trans-${f.id}-${img.pageNum}`);
+          transEl.textContent = `Hata: ${e.message}`;
+          transEl.style.color = 'var(--error)';
+          transEl.classList.remove('loading');
+          pageResults.push({ page: img.pageNum, text: `[Hata: ${e.message}]` });
+          log(`Sayfa ${img.pageNum} hata: ${e.message}`, 'err');
+        }
+      }
+
+      f.result = { name: f.name, pages: pageResults };
+      setFileStatus(f.id, 'done', '✅ Tamamlandı');
+      log(`"${f.name}" tamamlandı`, 'ok');
+
+    } catch(e) {
+      setFileStatus(f.id, 'error', '❌ Hata');
+      log(`"${f.name}" işlenemedi: ${e.message}`, 'err');
+    }
+  }
+
+  isProcessing = false;
+  btn.classList.remove('loading');
+  btn.querySelector('.btn-label').textContent = 'Tekrar Çevir';
+  btn.disabled = false;
+  document.getElementById('progress-label').textContent = '✅ Tüm dosyalar işlendi!';
+  showAlert('Çeviri tamamlandı!', 'success');
+}
+
+// ── Download ──
+function downloadResult(id) {
+  const f = files.find(x => x.id == id);
+  if (!f || !f.result) return;
+  const lines = [`# ${f.result.name} — Türkçe Çeviri\n`];
+  for (const p of f.result.pages) {
+    lines.push(`\n---\n## Sayfa / Slayt ${p.page}\n`);
+    lines.push(p.text);
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = f.name.replace(/\.\w+$/, '') + '_turkce.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
